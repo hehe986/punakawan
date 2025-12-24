@@ -18,7 +18,12 @@ db_config = {
 }
 
 def get_db_connection():
-    return mysql.connector.connect(**db_config)
+    try:
+        conn = mysql.connector.connect(**db_config)
+        return conn
+    except Error as e:
+        print(f"Gagal koneksi ke Azure: {e}")
+        return None
 
 # --- KONFIGURASI UPLOAD GAMBAR ---
 UPLOAD_FOLDER = 'static/images'
@@ -140,3 +145,4 @@ def logout():
 
 if _name_ == '_main_':
     app.run(debug=True)
+
