@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify, flash
-import mysql.connector
+import pymsql
 from mysql.connector import Error
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
@@ -19,10 +19,17 @@ db_config = {
 
 def get_db_connection():
     try:
-        conn = mysql.connector.connect(**db_config)
+        conn = pymysql.connect(
+            host='web-toko-bangunan.mysql.database.azure.com',
+            user='punakawan',
+            password='Punak4w@n#2025',
+            database='toko_bangunan',
+            cursorclass=pymysql.cursors.DictCursor, # Agar tetap bisa pakai format user['nama']
+            autocommit=True
+        )
         return conn
-    except Error as e:
-        print(f"Gagal koneksi ke Azure: {e}")
+    except Exception as e:
+        print(f"Koneksi Gagal: {e}")
         return None
 
 # --- KONFIGURASI UPLOAD GAMBAR ---
@@ -145,4 +152,5 @@ def logout():
 
 if _name_ == '_main_':
     app.run(debug=True)
+
 
