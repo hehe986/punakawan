@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kalkulator Material - Maju Jaya</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #e67e22;
+            --bg: #f4f7f6;
+            --white: #ffffff;
+            --success: #27ae60;
+        }
+
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); margin: 0; padding: 0; color: #333; }
+
+        /* --- HEADER & NAVIGATION (Identik dengan Index) --- */
+        header {
+            background-color: var(--primary);
+            color: white;
+            padding: 1rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        .logo h2 { margin: 0; color: var(--accent); display: flex; align-items: center; gap: 10px; }
+        
+        nav { display: flex; align-items: center; }
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin-left: 20px;
+            font-weight: 500;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        nav a:hover { color: var(--accent); }
+
+        .btn-login { border: 1px solid white; padding: 5px 15px; border-radius: 5px; color: white !important; }
+        .btn-daftar { background-color: var(--accent); padding: 5px 15px; border-radius: 5px; color: white !important; font-weight: bold; }
+        .btn-logout { color: #ff7675 !important; }
+
+        /* --- KALKULATOR LAYOUT --- */
+        .calc-container { 
+            max-width: 800px; 
+            margin: 40px auto; 
+            background: var(--white); 
+            border-radius: 15px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
+            overflow: hidden; 
+        }
+        
+        .calc-header { background: #f8f9fa; color: var(--primary); padding: 25px; text-align: center; border-bottom: 1px solid #eee; }
+        .calc-header h2 { margin: 0; font-size: 1.8rem; }
+        
+        .tabs { display: flex; background: #ecf0f1; }
+        .tab-btn { flex: 1; padding: 15px; border: none; cursor: pointer; font-weight: bold; color: #7f8c8d; transition: 0.3s; background: #ecf0f1; font-size: 1rem; }
+        .tab-btn i { margin-right: 8px; }
+        .tab-btn.active { background: var(--white); color: var(--accent); border-bottom: 4px solid var(--accent); }
+
+        .tab-content { padding: 40px; display: none; animation: fadeIn 0.4s ease; }
+        .tab-content.active { display: block; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .input-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; color: var(--primary); }
+        input, select { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; outline: none; transition: 0.3s; }
+        input:focus { border-color: var(--accent); box-shadow: 0 0 8px rgba(230, 126, 34, 0.1); }
+
+        .btn-calc { background: var(--accent); color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 10px; }
+        .btn-calc:hover { background: #d35400; transform: translateY(-2px); }
+
+        .result-box { margin-top: 30px; padding: 25px; background: #f0f4f8; border-radius: 12px; border-left: 6px solid var(--accent); display: none; }
+        .result-item { display: flex; justify-content: space-between; margin-bottom: 12px; border-bottom: 1px dashed #cbd5e0; padding-bottom: 8px; font-size: 1rem; }
+        .val { font-weight: bold; color: var(--primary); font-size: 1.1rem; }
+
+        /* --- RESPONSIVE --- */
+        @media (max-width: 768px) {
+            header { flex-direction: column; padding: 1rem; }
+            nav { margin-top: 15px; flex-wrap: wrap; justify-content: center; gap: 10px; }
+            nav a { margin-left: 0; font-size: 14px; }
+            .calc-container { margin: 20px; }
+            .tab-btn { font-size: 0.9rem; padding: 12px 5px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">
+            <a href="{{ url_for('index') }}" style="text-decoration: none;">
+                <h2><i class="fas fa-hammer"></i> Maju Jaya</h2>
+            </a>
+        </div>
+        <nav>
+            <a href="{{ url_for('index') }}"><i class="fas fa-home"></i> Beranda</a>
+            <a href="{{ url_for('kalkulator') }}"><i class="fas fa-calculator"></i> Kalkulator</a>
+            <a href="{{ url_for('keranjang') }}"><i class="fas fa-shopping-cart"></i> Keranjang</a>
+            
+            {% if session.user_name %}
+                <a href="{{ url_for('histori_pesanan') }}"><i class="fas fa-history"></i> Histori</a>
+                <a href="{{ url_for('profil') }}"><i class="fas fa-user-circle"></i> Profil</a>
+            {% else %}
+                <a href="{{ url_for('login_pelanggan') }}" class="btn-login">Login</a>
+                <a href="{{ url_for('daftar_pelanggan') }}" class="btn-daftar">Daftar</a>
+            {% endif %}
+        </nav>
+    </header>
+
+    <div class="calc-container">
+        <div class="calc-header">
+            <h2>Estimasi Kebutuhan Material</h2>
+            <p>Hitung kebutuhan material konstruksi Anda secara praktis & akurat</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="openTab(event, 'dinding')"><i class="fas fa-border-all"></i> Dinding</button>
+            <button class="tab-btn" onclick="openTab(event, 'atap')"><i class="fas fa-home"></i> Atap</button>
+            <button class="tab-btn" onclick="openTab(event, 'lantai')"><i class="fas fa-th"></i> Lantai</button>
+        </div>
+
+        <div id="dinding" class="tab-content active">
+            <div class="input-group">
+                <label><i class="fas fa-arrows-alt-h"></i> Panjang Dinding (meter)</label>
+                <input type="number" id="p_dinding" placeholder="Contoh: 10">
+            </div>
+            <div class="input-group">
+                <label><i class="fas fa-arrows-alt-v"></i> Tinggi Dinding (meter)</label>
+                <input type="number" id="t_dinding" placeholder="Contoh: 3.5">
+            </div>
+            <button class="btn-calc" onclick="hitungDinding()">Hitung Sekarang</button>
+            
+            <div id="res_dinding" class="result-box">
+                <div class="result-item"><span>Luas Permukaan:</span> <span class="val" id="luas_d">0 m²</span></div>
+                <div class="result-item"><span>Bata Merah (±70pcs/m²):</span> <span class="val" id="bata_d">0 pcs</span></div>
+                <div class="result-item"><span>Estimasi Cat (±1kg/10m²):</span> <span class="val" id="cat_d">0 kg</span></div>
+                <div class="result-item"><span>Semen (Plester/Pasang):</span> <span class="val" id="semen_d">0 sak</span></div>
+            </div>
+        </div>
+
+        <div id="atap" class="tab-content">
+            <div class="input-group">
+                <label><i class="fas fa-expand"></i> Panjang Bangunan (meter)</label>
+                <input type="number" id="p_atap" placeholder="Contoh: 8">
+            </div>
+            <div class="input-group">
+                <label><i class="fas fa-expand-alt"></i> Lebar Bangunan (meter)</label>
+                <input type="number" id="l_atap" placeholder="Contoh: 6">
+            </div>
+            <div class="input-group">
+                <label><i class="fas fa-layer-group"></i> Jenis Penutup Atap</label>
+                <select id="tipe_atap">
+                    <option value="25">Genteng Tanah Liat (25 pcs/m²)</option>
+                    <option value="1.5">Seng / Spandek (Lembar m²)</option>
+                </select>
+            </div>
+            <button class="btn-calc" onclick="hitungAtap()">Hitung Sekarang</button>
+
+            <div id="res_atap" class="result-box">
+                <div class="result-item"><span>Estimasi Luas Atap (Miring):</span> <span class="val" id="luas_a">0 m²</span></div>
+                <div class="result-item"><span>Total Kebutuhan Material:</span> <span class="val" id="total_a">0 unit</span></div>
+            </div>
+        </div>
+
+        <div id="lantai" class="tab-content">
+            <div class="input-group">
+                <label><i class="fas fa-vector-square"></i> Panjang Ruangan (meter)</label>
+                <input type="number" id="p_lantai" placeholder="Contoh: 4">
+            </div>
+            <div class="input-group">
+                <label><i class="fas fa-vector-square"></i> Lebar Ruangan (meter)</label>
+                <input type="number" id="l_lantai" placeholder="Contoh: 4">
+            </div>
+            <div class="input-group">
+                <label><i class="fas fa-box-open"></i> Ukuran Keramik</label>
+                <select id="uk_keramik">
+                    <option value="1">Dus Standar (Isi ±1m²)</option>
+                </select>
+            </div>
+            <button class="btn-calc" onclick="hitungLantai()">Hitung Sekarang</button>
+
+            <div id="res_lantai" class="result-box">
+                <div class="result-item"><span>Luas Lantai:</span> <span class="val" id="luas_l">0 m²</span></div>
+                <div class="result-item"><span>Estimasi Kebutuhan:</span> <span class="val" id="total_l">0 Dus</span></div>
+            </div>
+        </div>
+    </div>
+
+    
+
+    <script>
+        function openTab(evt, tabName) {
+            let i, tabcontent, tablinks;
+            tabcontent = document.getElementsByClassName("tab-content");
+            for (i = 0; i < tabcontent.length; i++) { tabcontent[i].classList.remove("active"); }
+            tablinks = document.getElementsByClassName("tab-btn");
+            for (i = 0; i < tablinks.length; i++) { tablinks[i].classList.remove("active"); }
+            document.getElementById(tabName).classList.add("active");
+            evt.currentTarget.classList.add("active");
+        }
+
+        function hitungDinding() {
+            let p = parseFloat(document.getElementById('p_dinding').value) || 0;
+            let t = parseFloat(document.getElementById('t_dinding').value) || 0;
+            let luas = p * t;
+            
+            if(luas > 0) {
+                document.getElementById('res_dinding').style.display = 'block';
+                document.getElementById('luas_d').innerText = luas.toFixed(2) + " m²";
+                document.getElementById('bata_d').innerText = Math.ceil(luas * 70) + " pcs";
+                document.getElementById('cat_d').innerText = (luas / 10).toFixed(1) + " kg";
+                document.getElementById('semen_d').innerText = Math.ceil(luas / 5) + " sak";
+            }
+        }
+
+        function hitungAtap() {
+            let p = parseFloat(document.getElementById('p_atap').value) || 0;
+            let l = parseFloat(document.getElementById('l_atap').value) || 0;
+            let tipe = parseFloat(document.getElementById('tipe_atap').value);
+            // Estimasi luas miring (asumsi sudut 35 derajat / cos 35 ≈ 0.82)
+            let luasAtap = (p * l) / 0.82; 
+            
+            if(luasAtap > 0) {
+                document.getElementById('res_atap').style.display = 'block';
+                document.getElementById('luas_a').innerText = luasAtap.toFixed(2) + " m²";
+                document.getElementById('total_a').innerText = Math.ceil(luasAtap * tipe) + " unit/pcs";
+            }
+        }
+
+        function hitungLantai() {
+            let p = parseFloat(document.getElementById('p_lantai').value) || 0;
+            let l = parseFloat(document.getElementById('l_lantai').value) || 0;
+            let luas = p * l;
+            
+            if(luas > 0) {
+                document.getElementById('res_lantai').style.display = 'block';
+                document.getElementById('luas_l').innerText = luas.toFixed(2) + " m²";
+                document.getElementById('total_l').innerText = Math.ceil(luas * 1.05) + " Dus (Incl. 5% Cadangan)";
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Riwayat Pesanan - Maju Jaya</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #e67e22;
+            --success: #27ae60;
+            --bg: #f4f7f6;
+            --danger: #e74c3c;
+        }
+
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: var(--bg); 
+            margin: 0; 
+            color: #333;
+        }
+
+        /* --- HEADER NAV (Konsisten dengan Index) --- */
+        header {
+            background-color: var(--primary);
+            color: white;
+            padding: 1rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        .logo h2 { margin: 0; color: var(--accent); display: flex; align-items: center; gap: 10px; }
+        
+        nav { display: flex; align-items: center; }
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin-left: 20px;
+            font-weight: 500;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        nav a:hover { color: var(--accent); }
+
+        .btn-logout { color: #ff7675 !important; }
+
+        /* --- CONTAINER UTAMA --- */
+        .history-container { 
+            max-width: 900px; 
+            margin: 40px auto; 
+            background: white; 
+            padding: 30px; 
+            border-radius: 15px; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1); 
+        }
+        
+        h2.page-title { 
+            color: var(--primary); 
+            border-bottom: 2px solid var(--accent); 
+            padding-bottom: 10px; 
+            margin-bottom: 30px; 
+        }
+        
+        /* --- KARTU PESANAN --- */
+        .order-card {
+            border: 1px solid #eee;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: 0.3s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .order-card:hover { 
+            border-color: var(--accent); 
+            background: #fcfcfc; 
+            transform: translateY(-2px); 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+
+        .order-info h4 { margin: 0 0 5px 0; color: var(--primary); font-size: 1.1rem; }
+        .order-info p { margin: 3px 0; color: #7f8c8d; font-size: 0.9rem; }
+
+        .order-status { text-align: right; }
+        .status-badge {
+            display: inline-block;
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .status-diproses { background: #fff3e0; color: #e67e22; }
+        .status-dikirim { background: #e3f2fd; color: #2196f3; }
+        .status-selesai { background: #e8f5e9; color: #27ae60; }
+
+        .price-tag { 
+            display: block; 
+            font-size: 1.1rem; 
+            font-weight: bold; 
+            color: var(--success); 
+            margin-top: 5px; 
+        }
+
+        .btn-detail {
+            display: inline-block;
+            background: var(--primary);
+            color: white;
+            padding: 8px 18px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: 0.3s;
+        }
+        .btn-detail:hover { background: var(--accent); }
+
+        /* --- EMPTY STATE --- */
+        .empty-state { text-align: center; padding: 60px 20px; color: #bdc3c7; }
+        .empty-state i { margin-bottom: 20px; color: #ecf0f1; }
+
+        /* --- RESPONSIVE --- */
+        @media (max-width: 768px) {
+            header { flex-direction: column; padding: 1rem; }
+            nav { margin-top: 15px; flex-wrap: wrap; justify-content: center; gap: 10px; }
+            nav a { margin-left: 0; font-size: 14px; }
+            .order-card { flex-direction: column; text-align: center; gap: 20px; }
+            .order-status { text-align: center; border-top: 1px solid #eee; padding-top: 15px; width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">
+            <a href="{{ url_for('index') }}" style="text-decoration: none;">
+                <h2><i class="fas fa-hammer"></i> Maju Jaya</h2>
+            </a>
+        </div>
+        <nav>
+            <a href="{{ url_for('index') }}"><i class="fas fa-home"></i> Beranda</a>
+            <a href="{{ url_for('kalkulator') }}"><i class="fas fa-calculator"></i> Kalkulator</a>
+            <a href="{{ url_for('keranjang') }}"><i class="fas fa-shopping-cart"></i> Keranjang</a>
+            
+            {% if session.user_name %}
+                <a href="{{ url_for('histori_pesanan') }}"><i class="fas fa-history"></i> Histori</a>
+                <a href="{{ url_for('profil') }}"><i class="fas fa-user-circle"></i> Profil</a>
+            {% else %}
+                <a href="{{ url_for('login_pelanggan') }}" class="btn-login">Login</a>
+                <a href="{{ url_for('daftar_pelanggan') }}" class="btn-daftar">Daftar</a>
+            {% endif %}
+        </nav>
+    </header>
+
+    <div class="history-container">
+        <h2 class="page-title"><i class="fas fa-history"></i> Riwayat Pesanan Anda</h2>
+
+        {% if orders %}
+            {% for o in orders %}
+            <div class="order-card">
+                <div class="order-info">
+                    <h4>ID Pesanan: #MJ-{{ o.id_pesanan }}</h4>
+                    <p><i class="far fa-calendar-alt"></i> Tgl: {{ o.tanggal_pesanan }}</p>
+                    <span class="price-tag">Total Bayar: Rp {{ "{:,}".format(o.total_bayar) }}</span>
+                </div>
+                <div class="order-status">
+                    <div>
+                        <span class="status-badge 
+                            {% if o.status == 'Diproses' %}status-diproses
+                            {% elif o.status == 'Dikirim' %}status-dikirim
+                            {% else %}status-selesai{% endif %}">
+                            {{ o.status }}
+                        </span>
+                    </div>
+                    <a href="{{ url_for('detail_pesanan_pelanggan', id=o.id_pesanan) }}" class="btn-detail">
+                        <i class="fas fa-search"></i> Detail Pesanan
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-shopping-bag fa-5x"></i>
+                <h3>Belum ada transaksi</h3>
+                <p>Anda belum pernah melakukan pemesanan material.</p>
+                <br>
+                <a href="{{ url_for('index') }}" style="background: var(--accent); color: white; padding: 10px 25px; border-radius: 8px; text-decoration: none; font-weight: bold;">Mulai Belanja</a>
+            </div>
+        {% endif %}
+    </div>
+
+</body>
+</html>

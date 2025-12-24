@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rincian Pesanan Saya - Maju Jaya</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #e67e22;
+            --bg: #f8f9fa;
+        }
+
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 20px; }
+        .container { max-width: 600px; margin: 0 auto; background: white; padding: 25px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        
+        .header { display: flex; align-items: center; gap: 15px; margin-bottom: 25px; border-bottom: 2px solid #f1f1f1; padding-bottom: 15px; }
+        .header h2 { margin: 0; font-size: 1.2rem; color: var(--primary); }
+        .btn-back { color: var(--primary); text-decoration: none; font-size: 1.2rem; }
+
+        .status-box { background: #fff3e0; padding: 15px; border-radius: 10px; margin-bottom: 20px; border-left: 5px solid var(--accent); }
+        .status-box small { color: #666; display: block; margin-bottom: 5px; }
+        .status-box span { font-weight: bold; color: var(--accent); text-transform: uppercase; }
+
+        .item-list { margin-bottom: 25px; }
+        .item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #eee; }
+        .item-info h4 { margin: 0; font-size: 1rem; color: var(--primary); }
+        .item-info p { margin: 3px 0 0; color: #888; font-size: 0.85rem; }
+        .item-price { font-weight: bold; color: var(--primary); }
+
+        .summary { background: #f9f9f9; padding: 15px; border-radius: 10px; }
+        .summary-row { display: flex; justify-content: space-between; margin-bottom: 8px; color: #555; }
+        .total-row { display: flex; justify-content: space-between; margin-top: 10px; padding-top: 10px; border-top: 2px dashed #ddd; font-weight: bold; font-size: 1.1rem; color: var(--primary); }
+
+        .footer-note { text-align: center; margin-top: 20px; color: #999; font-size: 0.8rem; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <a href="{{ url_for('histori_pesanan') }}" class="btn-back"><i class="fas fa-chevron-left"></i></a>
+        <h2>Rincian Pesanan #{{ pesanan.id_pesanan }}</h2>
+    </div>
+
+    <div class="status-box">
+        <small>Status Pesanan Saat Ini:</small>
+        <span><i class="fas fa-clock"></i> {{ pesanan.status }}</span>
+    </div>
+
+    <div class="item-list">
+        {% for item in rincian %}
+        <div class="item">
+            <div class="item-info">
+                <h4>{{ item.nama_produk }}</h4>
+                <p>{{ item.jumlah }} x Rp {{ "{:,}".format(item.harga_satuan) }}</p>
+            </div>
+            <div class="item-price">
+                Rp {{ "{:,}".format(item.harga_satuan * item.jumlah) }}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="summary">
+        <div class="summary-row">
+            <span>Metode Pembayaran</span>
+            <span>Tunai / COD</span>
+        </div>
+        <div class="summary-row">
+            <span>Tanggal Pesan</span>
+            <span>{{ pesanan.tanggal_pesanan.strftime('%d %b %Y %H:%M') }}</span>
+        </div>
+        <div class="total-row">
+            <span>Total Bayar</span>
+            <span>Rp {{ "{:,}".format(pesanan.total_bayar) }}</span>
+        </div>
+    </div>
+
+    <div class="footer-note">
+        Terima kasih telah berbelanja di Toko Bangunan Maju Jaya.
+    </div>
+</div>
+
+</body>
+</html>

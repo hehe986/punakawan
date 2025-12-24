@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Toko Bangunan Maju Jaya - Katalog</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #e67e22;
+            --bg: #f4f7f6;
+            --success: #27ae60;
+            --danger: #e74c3c;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            background-color: var(--bg);
+            color: #333;
+        }
+
+        /* Header & Navigation */
+        header {
+            background-color: var(--primary);
+            color: white;
+            padding: 1rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        .logo h2 { margin: 0; color: var(--accent); display: flex; align-items: center; gap: 10px; }
+        
+        nav { display: flex; align-items: center; }
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin-left: 20px;
+            font-weight: 500;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        nav a:hover { color: var(--accent); }
+
+        /* Gaya untuk tombol saat stok habis */
+        .btn-disabled {
+            background-color: #bdc3c7 !important;
+            cursor: not-allowed !important;
+            opacity: 0.8;
+        }
+
+        .badge-habis {
+            background-color: var(--danger);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            display: inline-block;
+            margin-bottom: 5px;
+        }
+
+        /* --- PERBAIKAN GAYA NOTIFIKASI (TOAST) --- */
+        .toast-notif {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background-color: var(--primary);
+            color: white;
+            padding: 16px 24px;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 9999;
+            min-width: 250px;
+            animation: slideIn 0.5s ease-out forwards, fadeOut 0.5s ease-in 2.5s forwards;
+        }
+
+        .toast-notif i { color: var(--accent); font-size: 1.2rem; }
+
+        @keyframes slideIn {
+            from { transform: translateX(120%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(20px); pointer-events: none; }
+        }
+
+        /* Alerts / Flash Messages dari Flask */
+        .flash-messages { padding: 10px 5%; margin-top: 10px; }
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-weight: 500;
+            border-left: 5px solid transparent;
+        }
+        .alert-success { background-color: #d4edda; color: #155724; border-color: var(--success); }
+        .alert-danger { background-color: #f8d7da; color: #721c24; border-color: var(--danger); }
+
+        /* Buttons & Search */
+        .btn-login { background-color: var(--accent); padding: 5px 15px; border-radius: 5px; color: white !important; font-weight: bold; }
+        .btn-daftar { background-color: var(--accent); padding: 5px 15px; border-radius: 5px; color: white !important; font-weight: bold; }
+        .btn-logout { color: #ff7675 !important; }
+
+        .search-container { background: white; padding: 30px 20px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        #product-search {
+            width: 50%; padding: 12px 25px; border-radius: 30px; border: 2px solid #ddd;
+            font-size: 16px; outline: none; transition: 0.3s;
+        }
+        #product-search:focus { border-color: var(--accent); box-shadow: 0 0 8px rgba(230, 126, 34, 0.2); }
+
+        /* Product Grid */
+        .container { padding: 40px 5%; }
+        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 25px; }
+        .product-card {
+            background: white; border-radius: 12px; padding: 15px; text-align: center;
+            transition: transform 0.3s, box-shadow 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .product-card:hover { transform: translateY(-5px); box-shadow: 0 8px 15px rgba(0,0,0,0.15); }
+        .product-card img { width: 100%; height: 180px; object-fit: cover; border-radius: 8px; margin-bottom: 15px; }
+        .product-card h3 { margin: 10px 0; font-size: 1.1rem; color: var(--primary); height: 2.4em; overflow: hidden; }
+
+        .price { font-size: 1.2rem; color: var(--success); font-weight: bold; margin: 10px 0; }
+        .btn-add {
+            background-color: var(--accent); color: white; border: none; padding: 10px 20px;
+            border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold;
+            transition: 0.3s; display: flex; justify-content: center; align-items: center; gap: 8px;
+        }
+
+        @media (max-width: 768px) {
+            header { flex-direction: column; padding: 1rem; }
+            nav { margin-top: 15px; flex-wrap: wrap; justify-content: center; gap: 10px; }
+            nav a { margin-left: 0; font-size: 14px; }
+            #product-search { width: 90%; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">
+            <a href="{{ url_for('index') }}" style="text-decoration: none;">
+                <h2><i class="fas fa-hammer"></i> Maju Jaya</h2>
+            </a>
+        </div>
+        <nav>
+            <a href="{{ url_for('index') }}"><i class="fas fa-home"></i> Beranda</a>
+            <a href="{{ url_for('kalkulator') }}"><i class="fas fa-calculator"></i> Kalkulator</a>
+            <a href="{{ url_for('keranjang') }}"><i class="fas fa-shopping-cart"></i> Keranjang</a>
+            
+            {% if session.user_name %}
+                <a href="{{ url_for('histori_pesanan') }}"><i class="fas fa-history"></i> Histori</a>
+                <a href="{{ url_for('profil') }}"><i class="fas fa-user-circle"></i> Profil</a>
+            {% else %}
+                <a href="{{ url_for('login_pelanggan') }}" class="btn-login">Login</a>
+                <a href="{{ url_for('daftar_pelanggan') }}" class="btn-daftar">Daftar</a>
+            {% endif %}
+        </nav>
+    </header>
+
+    <div class="flash-messages">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <div class="search-container">
+        <input type="text" id="product-search" onkeyup="filterProducts()" placeholder="Cari material (semen, cat, bata...)...">
+    </div>
+
+    <div class="container">
+        <div class="product-grid">
+            {% for p in produk %}
+            <div class="product-card">
+                <img src="{{ url_for('static', filename='images/' + p.gambar) }}" alt="{{ p.nama_produk }}">
+                
+                {% if p.stok <= 0 %}
+                    <span class="badge-habis">Stok Habis</span>
+                {% endif %}
+                
+                <h3>{{ p.nama_produk }}</h3>
+                <p class="price">Rp {{ "{:,}".format(p.harga) }}</p>
+                <p style="color: #7f8c8d; font-size: 0.9rem; margin-bottom: 15px;">
+                    Stok: {{ p.stok if p.stok > 0 else 'Kosong' }}
+                </p>
+
+                {% if p.stok > 0 %}
+                    <button class="btn-add" onclick="addToCart('{{ p.id_produk }}', '{{ p.nama_produk }}', '{{ p.harga }}', '{{ p.stok }}')">
+                        <i class="fas fa-cart-plus"></i> Tambah
+                    </button>
+                {% else %}
+                    <button class="btn-add btn-disabled" onclick="showToast('Maaf, stok {{ p.nama_produk }} habis!', 'danger')">
+                        <i class="fas fa-exclamation-triangle"></i> Stok Habis
+                    </button>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/common.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/cart.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+
+    <script>
+        function filterProducts() {
+            let input = document.getElementById('product-search').value.toLowerCase();
+            let cards = document.getElementsByClassName('product-card');
+            
+            for (let card of cards) {
+                let title = card.getElementsByTagName('h3')[0].innerText.toLowerCase();
+                card.style.display = title.includes(input) ? "" : "none";
+            }
+        }
+
+        // Fungsi Toast Global untuk JS
+        // Fungsi Toast Global untuk JS
+        function showToast(message, type = "success") {
+            // Hapus toast lama jika ada agar tidak menumpuk di layar
+            const oldToast = document.querySelector('.toast-notif');
+            if (oldToast) oldToast.remove();
+
+            const toast = document.createElement('div');
+            // Jika type danger, kita berikan background merah (bisa ditambahkan di CSS)
+            toast.className = `toast-notif ${type}`;
+            
+            // Pilih icon berdasarkan tipe
+            const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+            const color = type === 'danger' ? 'background-color: #e74c3c;' : '';
+
+            toast.style.cssText = color;
+            toast.innerHTML = `<i class="fas ${icon}" style="color:white;"></i> <span>${message}</span>`;
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => { 
+                if(toast) toast.remove(); 
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

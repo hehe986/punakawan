@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Admin - Maju Jaya</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --sidebar: #2c3e50;
+            --accent: #e67e22;
+            --bg: #f4f7f6;
+            --white: #ffffff;
+            --success: #27ae60;
+            --danger: #d63031;
+        }
+
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background: var(--bg); display: flex; overflow-x: hidden; }
+
+        /* --- SIDEBAR STYLE --- */
+        .sidebar {
+            width: 250px; 
+            background: var(--sidebar); 
+            height: 100vh;
+            color: white; 
+            padding: 20px; 
+            position: fixed; 
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1); 
+            z-index: 1000;
+            transition: all 0.3s ease;
+            left: -450px; /* Sembunyi default */
+        }
+
+        .sidebar.active { left: 0; }
+        .sidebar h2 { color: var(--accent); margin-bottom: 30px; font-size: 1.5rem; text-align: center; }
+        .sidebar a {
+            display: block; color: #bdc3c7; text-decoration: none; padding: 12px 15px;
+            margin-bottom: 8px; border-radius: 8px; transition: 0.3s;
+        }
+        .sidebar a:hover, .sidebar a.active { background: #34495e; color: white; border-left: 4px solid var(--accent); }
+
+        /* --- HAMBURGER BUTTON --- */
+        .hamburger-menu {
+            font-size: 20px; 
+            cursor: pointer;
+            background: var(--sidebar); 
+            color: white; 
+            padding: 12px 15px;
+            border-radius: 8px; 
+            border: none; 
+            position: fixed; 
+            top: 20px; 
+            left: 20px; 
+            z-index: 1100;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+        }
+
+        /* --- MAIN CONTENT (JARAK AMAN) --- */
+        .main-content { 
+            flex: 1; 
+            padding: 80px 80px; 
+            margin-top: 60px; 
+            transition: all 0.3s ease; 
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        /* --- UI CARDS --- */
+        .header-stats {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 25px; margin-bottom: 35px;
+        }
+
+        .stat-card {
+            background: white; padding: 25px; border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 20px;
+        }
+
+        .stat-icon {
+            width: 50px; height: 50px; background: rgba(230, 126, 34, 0.1);
+            color: var(--accent); border-radius: 10px; display: flex; justify-content: center; align-items: center; font-size: 1.5rem;
+        }
+
+        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 30px; }
+
+        /* --- TABLE STYLE --- */
+        .table-responsive { width: 100%; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; min-width: 700px; }
+        th { text-align: left; padding: 15px; background: #f8f9fa; color: #7f8c8d; font-size: 0.85rem; text-transform: uppercase; }
+        td { padding: 15px; border-bottom: 1px solid #f1f1f1; color: #333; font-size: 0.95rem; }
+        
+        .status-badge {
+            padding: 6px 12px; border-radius: 6px; font-size: 0.75rem; font-weight: bold; text-transform: uppercase;
+        }
+        .status-diproses { background: #fff3cd; color: #856404; }
+        .status-selesai { background: #d4edda; color: #155724; }
+
+        /* --- BUTTONS --- */
+        .btn-selesai {
+            background: var(--success); color: white; padding: 8px 12px; text-decoration: none;
+            border-radius: 6px; font-size: 0.8rem; font-weight: bold; transition: 0.3s;
+        }
+        .btn-selesai:hover { background: #219150; }
+
+        .btn-detail {
+            color: var(--sidebar); text-decoration: none; font-weight: bold; margin-right: 15px; font-size: 0.85rem;
+        }
+        .btn-detail:hover { color: var(--accent); }
+
+        /* --- OVERLAY & NOTIF --- */
+        .sidebar-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0,0,0,0.4); z-index: 999; backdrop-filter: blur(2px);
+        }
+        .sidebar-overlay.active { display: block; }
+
+        #notif-alert {
+            position: fixed; top: 20px; right: 20px; background: var(--danger);
+            color: white; padding: 15px 25px; border-radius: 8px; display: none;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 2000;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="notif-alert"></div>
+
+    <button class="hamburger-menu" id="hamburgerBtn">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <div class="sidebar-overlay" id="overlay"></div>
+
+    <div class="sidebar" id="sidebarMenu">
+        <h2><i class="fas fa-hammer"></i> Maju Jaya</h2>
+        <a href="{{ url_for('admin') }}" class="active"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+        <a href="{{ url_for('kelola_produk') }}"><i class="fas fa-boxes"></i> Kelola Produk</a>
+        <a href="{{ url_for('logout') }}" style="margin-top: 50px;"><i class="fas fa-sign-out-alt"></i> Keluar</a>
+    </div>
+
+    <div class="main-content">
+        <div class="header-section">
+            <h1>Dashboard Overview</h1>
+            <p style="color: #7f8c8d; margin-bottom: 30px;">Selamat datang kembali di panel manajemen Toko Maju Jaya.</p>
+        </div>
+
+        <div class="header-stats">
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-shopping-cart"></i></div>
+                <div>
+                    <h3>TOTAL PESANAN</h3>
+                    <p>{{ orders|length }}</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-wallet"></i></div>
+                <div>
+                    <h3>PENDAPATAN</h3>
+                    <p>Rp {{ "{:,}".format(orders|sum(attribute='total_bayar')) }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Tren Penjualan (7 Hari Terakhir)</h3>
+            <div style="height: 350px;">
+                <canvas id="salesChart"></canvas>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Daftar Pesanan Terbaru</h3>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID PESANAN</th>
+                            <th>PELANGGAN</th>
+                            <th>TOTAL BAYAR</th>
+                            <th>TANGGAL</th>
+                            <th>STATUS</th>
+                            <th>AKSI</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for o in orders %}
+                        <tr>
+                            <td><strong>#{{ o.id_pesanan }}</strong></td>
+                            <td>{{ o.nama_lengkap }}</td>
+                            <td style="color: var(--accent); font-weight: bold;">Rp {{ "{:,}".format(o.total_bayar) }}</td>
+                            <td>{{ o.tanggal_pesanan }}</td>
+                            <td>
+                                <span class="status-badge {% if o.status == 'Diproses' %}status-diproses{% else %}status-selesai{% endif %}">
+                                    {{ o.status }}
+                                </span>
+                            </td>
+                            <td>
+                                <a href="{{ url_for('lihat_detail_admin', id=o.id_pesanan) }}" class="btn-detail">
+                                    <i class="fas fa-eye"></i> Detail
+                                </a>
+
+                                {% if o.status == 'Diproses' %}
+                                <a href="{{ url_for('update_status_selesai', id=o.id_pesanan) }}" class="btn-selesai">
+                                    <i class="fas fa-check"></i> Selesaikan
+                                </a>
+                                {% else %}
+                                <span style="color: var(--success); font-weight: bold;"><i class="fas fa-check-double"></i> Tuntas</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Logika Sidebar
+        const hamburgerBtn = document.getElementById('hamburgerBtn');
+        const sidebarMenu = document.getElementById('sidebarMenu');
+        const overlay = document.getElementById('overlay');
+
+        function toggleSidebar() {
+            sidebarMenu.classList.toggle('active');
+            overlay.classList.toggle('active');
+            const icon = hamburgerBtn.querySelector('i');
+            if (sidebarMenu.classList.contains('active')) {
+                icon.classList.replace('fa-bars', 'fa-times');
+            } else {
+                icon.classList.replace('fa-times', 'fa-bars');
+            }
+        }
+
+        hamburgerBtn.addEventListener('click', toggleSidebar);
+        overlay.addEventListener('click', toggleSidebar);
+
+        // Inisialisasi Grafik
+        const ctx = document.getElementById('salesChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [{% for g in graph_data %}"{{ g.tgl }}",{% endfor %}],
+                datasets: [{
+                    label: 'Pendapatan (Rp)',
+                    data: [{% for g in graph_data %}{{ g.total }},{% endfor %}],
+                    borderColor: '#e67e22',
+                    tension: 0.4,
+                    fill: true,
+                    backgroundColor: 'rgba(230, 126, 34, 0.05)'
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+
+        // Notifikasi Cerdas
+        setInterval(() => {
+            fetch('/get_order_count')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.count > 0) {
+                        const alertBox = document.getElementById('notif-alert');
+                        alertBox.innerHTML = `<i class="fas fa-bell"></i> Ada ${data.count} Pesanan Baru!`;
+                        alertBox.style.display = 'block';
+                        setTimeout(() => location.reload(), 3000);
+                    }
+                });
+        }, 10000);
+    </script>
+</body>
+</html>
