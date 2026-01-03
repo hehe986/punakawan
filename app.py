@@ -23,7 +23,7 @@ app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
 # }
 
 # --- KONFIGURASI UPLOAD GAMBAR ---
-UPLOAD_FOLDER = 'static/images'
+UPLOAD_FOLDER = os.path.join(app.root_path, 'static', 'images')
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
@@ -396,7 +396,8 @@ def tambah_produk():
 
     if file:
         filename = secure_filename(file.filename)
-        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file.save(file_path)
         
         cur = mysql.connection.cursor()
         cur.execute("INSERT INTO produk (nama_produk, harga, gambar, stok) VALUES (%s, %s, %s, %s)", 
@@ -478,4 +479,5 @@ def logout():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
 
