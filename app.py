@@ -383,7 +383,7 @@ def kelola_produk():
     cur.execute("SELECT * FROM produk")
     produk = cur.fetchall()
     cur.close()
-    return render_template('Kelola_Produk.html', produk=produk)
+    return render_template('kelola_produk.html', produk=produk)
 
 @app.route('/tambah_produk', methods=['POST'])
 def tambah_produk():
@@ -478,3 +478,4 @@ def logout():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
