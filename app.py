@@ -436,6 +436,41 @@ def aktifkan_produk(id):
     flash("Produk berhasil diaktifkan kembali!", "success")
     return redirect(url_for('kelola_produk'))
 
+@app.route('/admin/hapus_permanen/<int:id>')
+def hapus_permanen(id):
+    if not is_admin(): return redirect(url_for('login_admin'))
+    
+    cur = mysql.connection.cursor()
+    try:
+        # 1. Hapus dulu detail transaksi yang berhubungan dengan produk ini
+        # ASUMSI: Nama tabel detail pesanan Anda adalah 'detail_pesanan'
+        cur.execute("DELETE FROM detail_pesanan WHERE id_produk = %s", [id])
+        
+        # 2. Ambil nama gambar
+        cur.execute("SELECT gambar FROM produk WHERE id_produk = %s", [id])
+        data = cur.fetchone()
+        
+        # 3. Hapus produk dari tabel utama
+        cur.execute("DELETE FROM produk WHERE id_produk = %s", [id])
+        
+        mysql.connection.commit()
+        
+        # 4. Hapus file gambar fisik
+        if data and data['gambar']:
+            gambar_path = os.path.join(app.config['UPLOAD_FOLDER'], data['gambar'])
+            if os.path.exists(gambar_path):
+                os.remove(gambar_path)
+                
+        flash("Produk dan semua riwayat terkait berhasil dihapus permanen!", "success")
+        
+    except Exception as e:
+        mysql.connection.rollback()
+        flash(f"Gagal menghapus: {str(e)}", "danger")
+    finally:
+        cur.close()
+        
+    return redirect(url_for('kelola_produk'))
+
 @app.route('/logout')
 def logout():
     session.clear()
