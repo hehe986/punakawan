@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify, flash
-import pymsql
+import pymysql
 from mysql.connector import Error
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
@@ -152,5 +152,6 @@ def logout():
 
 if _name_ == '_main_':
     app.run(debug=True)
+
 
 
