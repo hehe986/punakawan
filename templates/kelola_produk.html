@@ -13,11 +13,12 @@
             --accent: #e67e22;
             --success: #27ae60;
             --danger: #e74c3c;
+            --warning: #f39c12;
             --bg: #f4f7f6;
         }
 
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 20px; }
-        .container { max-width: 1100px; margin: 0 auto; }
+        .container { max-width: 1200px; margin: 0 auto; }
 
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
         .btn-back { text-decoration: none; color: var(--primary); font-weight: bold; display: flex; align-items: center; gap: 8px; }
@@ -34,21 +35,106 @@
         .table-card { background: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden; }
         table { width: 100%; border-collapse: collapse; }
         th { background: var(--primary); color: white; padding: 15px; text-align: left; }
-        td { padding: 15px; border-bottom: 1px solid #eee; }
+        td { padding: 15px; 
+            border-bottom: 1px solid #eee; 
+            vertical-align: middle;
+        }
         
         /* Gaya untuk baris yang dinonaktifkan */
-        .row-disabled { background-color: #f9f9f9; opacity: 0.7; }
+        .row-disabled { 
+            background-color: #f9f9f9; 
+        }
+
+        .row-disabled img {
+            filter: grayscale(100%);
+            opacity: 0.85;
+        }
+
+        .row-disabled .btn-activate,
+        .row-disabled .btn-permanent-delete {
+            opacity: 1;
+        }
+
+        .row-disabled .badge-status {
+            opacity: 1;
+            font-weight: bold;
+        }
         .badge-status { font-size: 10px; padding: 3px 6px; border-radius: 4px; text-transform: uppercase; margin-left: 5px; }
         .bg-del { background: #fee2e2; color: #b91c1c; }
+        .bg-warning { background: #fef3c7; color: #92400e; }
 
         .img-thumb { width: 50px; height: 50px; object-fit: cover; border-radius: 5px; }
         .stock-input { width: 70px; text-align: center; font-weight: bold; }
-        
+
+        input:disabled {
+            background-color: #f3f4f6;
+            color: #6b7280;
+            cursor: not-allowed;
+        }
+
         .btn-update { background: var(--primary); color: white; border: none; padding: 6px 12px; border-radius: 5px; cursor: pointer; }
-        .btn-delete { background: var(--danger); color: white; padding: 6px 12px; border-radius: 5px; text-decoration: none; font-size: 12px; cursor: pointer; }
-        .btn-activate { background: var(--success); color: white; padding: 6px 12px; border-radius: 5px; text-decoration: none; font-size: 12px; }
+        .btn-delete { 
+            background: var(--danger); 
+            color: white; 
+            padding: 6px 12px; 
+            border-radius: 5px; 
+            text-decoration: none; 
+            font-size: 12px; 
+            cursor: pointer;
+            display: inline-block;
+            margin-bottom: 5px;
+        }
+        .btn-activate { 
+            background: var(--success); 
+            color: white; 
+            padding: 6px 12px; 
+            border-radius: 5px; 
+            text-decoration: none; 
+            font-size: 12px;
+            display: inline-block;
+            margin-bottom: 5px;
+        }
+        .btn-permanent-delete {
+            background: #991b1b;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 12px;
+            cursor: pointer;
+            display: inline-block;
+            border: none;
+            font-family: inherit;
+        }
         
         .badge-low { background: #fff3cd; color: #856404; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; }
+        
+        .action-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            align-items: flex-start;
+        }
+        
+        .status-info {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+            font-style: italic;
+        }
+        
+        .danger-zone {
+            background: #fee2e2;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border-left: 4px solid #dc2626;
+        }
+        .danger-zone h4 {
+            color: #dc2626;
+            margin: 0 0 10px 0;
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
@@ -80,6 +166,7 @@
                     <th>Nama Produk</th>
                     <th>Harga</th>
                     <th>Stok</th>
+                    <th>Status</th>
                     <th>Aksi</th>
                 </tr>
             </thead>
@@ -107,30 +194,62 @@
                     </td>
                     <td>
                         {% if p.status == 'dihapus' %}
-                            <a href="{{ url_for('aktifkan_produk', id=p.id_produk) }}" class="btn-activate">
-                                <i class="fas fa-power-off"></i> Aktifkan
-                            </a>
+                            <span class="badge-status bg-del">Non-Aktif</span>
                         {% else %}
-                            <a href="#" 
-                               class="btn-delete" 
-                               onclick="konfirmasiHapus(event, '{{ url_for('hapus_produk', id=p.id_produk) }}', '{{ p.nama_produk }}')">
-                                <i class="fas fa-eye-slash"></i> Matikan
-                            </a>
+                            <span class="badge-status" style="background: #d1fae5; color: #065f46;">Aktif</span>
                         {% endif %}
+                    </td>
+                    <td>
+                        <div class="action-group">
+                            {% if p.status == 'dihapus' %}
+                                <a href="{{ url_for('aktifkan_produk', id=p.id_produk) }}" class="btn-activate">
+                                    <i class="fas fa-power-on"></i> Aktifkan
+                                </a>
+                                <button onclick="konfirmasiHapusPermanen(event, '{{ url_for('hapus_permanen', id=p.id_produk) }}', '{{ p.nama_produk }}')" 
+                                        class="btn-permanent-delete">
+                                    <i class="fas fa-trash-alt"></i> Hapus Permanen
+                                </button>
+                                <div class="status-info">
+                                    Produk ini sudah dinonaktifkan
+                                </div>
+                            {% else %}
+                                <a href="#" 
+                                   class="btn-delete" 
+                                   onclick="konfirmasiHapus(event, '{{ url_for('hapus_produk', id=p.id_produk) }}', '{{ p.nama_produk }}')">
+                                    <i class="fas fa-eye-slash"></i> Nonaktifkan
+                                </a>
+                                <div class="status-info">
+                                    Aktif di katalog pelanggan
+                                </div>
+                            {% endif %}
+                        </div>
                     </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
+        
+        <!-- Danger Zone Section -->
+        {% set produk_dihapus = produk|selectattr('status', 'equalto', 'dihapus')|list %}
+        {% if produk_dihapus|length > 0 %}
+        <div class="danger-zone">
+            <h4><i class="fas fa-exclamation-triangle"></i> Area Berbahaya - Produk yang Dinonaktifkan</h4>
+            <p style="margin: 0; font-size: 13px; color: #666;">
+                Terdapat <strong>{{ produk_dihapus|length }}</strong> produk yang dinonaktifkan. 
+                Hapus permanen akan menghapus data produk dari database secara permanen dan tidak dapat dikembalikan.
+            </p>
+        </div>
+        {% endif %}
     </div>
 </div>
 
 <script>
+    // Fungsi untuk nonaktifkan produk (soft delete)
     function konfirmasiHapus(event, url, namaProduk) {
         event.preventDefault();
         Swal.fire({
             title: 'Nonaktifkan Produk?',
-            text: "Produk '" + namaProduk + "' tidak akan muncul di katalog pelanggan, tapi riwayat transaksi tetap aman.",
+            text: "Produk '" + namaProduk + "' tidak akan muncul di katalog pelanggan, tapi data tetap tersimpan.",
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#e74c3c',
@@ -145,6 +264,46 @@
         })
     }
 
+    // Fungsi untuk hapus permanen
+    function konfirmasiHapusPermanen(event, url, namaProduk) {
+        event.preventDefault();
+        Swal.fire({
+            title: 'HAPUS PERMANEN?',
+            html: `<div style="text-align: left; padding: 10px;">
+                   <p><strong>Produk:</strong> ${namaProduk}</p>
+                   <p style="color: #dc2626; font-weight: bold;">
+                       <i class="fas fa-exclamation-triangle"></i> PERHATIAN:
+                   </p>
+                   <ul style="text-align: left; margin-left: 20px;">
+                       <li>Data akan dihapus secara permanen dari database</li>
+                       <li>Tidak dapat dikembalikan (irreversible)</li>
+                       <li>Riwayat transaksi terkait produk ini mungkin terpengaruh</li>
+                   </ul>
+                   <p>Masukkan <strong>"HAPUS"</strong> untuk konfirmasi:</p>
+                   <input type="text" id="confirmText" class="swal2-input" placeholder="Ketik HAPUS">
+                   </div>`,
+            icon: 'error',
+            showCancelButton: true,
+            confirmButtonColor: '#991b1b',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: 'Hapus Permanen',
+            cancelButtonText: 'Batalkan',
+            reverseButtons: true,
+            preConfirm: () => {
+                const confirmValue = document.getElementById('confirmText').value;
+                if (confirmValue !== 'HAPUS') {
+                    Swal.showValidationMessage('Harap ketik "HAPUS" untuk konfirmasi');
+                }
+                return confirmValue;
+            }
+        }).then((result) => {
+            if (result.isConfirmed && result.value === 'HAPUS') {
+                window.location.href = url;
+            }
+        })
+    }
+
+    // Notifikasi flash messages
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
         {% for category, message in messages %}
